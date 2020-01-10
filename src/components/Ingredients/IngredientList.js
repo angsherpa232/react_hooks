@@ -1,6 +1,6 @@
-import React from 'react';
+import React from "react";
 
-import './IngredientList.css';
+import "./IngredientList.css";
 
 const IngredientList = props => {
   return (
