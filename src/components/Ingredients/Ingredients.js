@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 
 import IngredientForm from "./IngredientForm";
 import Search from "./Search";
@@ -6,6 +6,15 @@ import IngredientList from "./IngredientList";
 
 function Ingredients() {
   const [userIngredients, setUserIngredients] = useState([]);
+
+  const filteredIngredientHandler = useCallback(filteredIngredients => {
+    setUserIngredients(filteredIngredients);
+  }, []);
+
+  useEffect(() => console.log("RENDERING INGREDIENTS", userIngredients), [
+    userIngredients
+  ]);
+
   const addIngredientHandler = ingredient => {
     fetch("https://marker-1516988810351.firebaseio.com/ingredients.json", {
       method: "POST",
@@ -23,7 +32,8 @@ function Ingredients() {
             ...ingredient
           }
         ]);
-      });
+      })
+      .catch(error => console.log(error));
   };
 
   return (
@@ -31,7 +41,7 @@ function Ingredients() {
       <IngredientForm onAddIngredient={addIngredientHandler} />
 
       <section>
-        <Search />
+        <Search onLoadIngredients={filteredIngredientHandler} />
         <IngredientList ingredients={userIngredients} onRemoveItem={() => {}} />
       </section>
     </div>
