@@ -6,7 +6,6 @@ import IngredientList from "./IngredientList";
 
 function Ingredients() {
   const [userIngredients, setUserIngredients] = useState([]);
-
   const addIngredientHandler = ingredient => {
     fetch("https://marker-1516988810351.firebaseio.com/ingredients.json", {
       method: "POST",
