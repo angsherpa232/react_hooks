@@ -18,11 +18,32 @@ const ingredientReducer = (currentIngredients, action) => {
   }
 };
 
+const httpReducer = (curHttpState, action) => {
+  switch (action.type) {
+    case "SEND":
+      return { isLoading: true, error: null };
+    case "RESPONSE":
+      return { ...curHttpState, isLoading: false };
+    case "ERROR":
+      return { isLoading: false, error: action.errorMessage };
+    case "CLEAR":
+      return { ...curHttpState, error: null };
+    default:
+      throw new Error("Should not have reached here");
+  }
+};
+
 function Ingredients() {
   const [userIngredients, dispatch] = useReducer(ingredientReducer, []);
   // const [userIngredients, setUserIngredients] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState();
+
+  const [httpState, dispatchHttp] = useReducer(httpReducer, {
+    isLoading: false,
+    error: null
+  });
+
+  // const [isLoading, setIsLoading] = useState(false);
+  // const [error, setError] = useState();
 
   const filteredIngredientHandler = useCallback(filteredIngredients => {
     // setUserIngredients(filteredIngredients);
@@ -34,7 +55,8 @@ function Ingredients() {
   ]);
 
   const addIngredientHandler = ingredient => {
-    setIsLoading(true);
+    // setIsLoading(true);
+    dispatchHttp({ type: "SEND" });
     fetch("https://marker-1516988810351.firebaseio.com/ingredients.json", {
       method: "POST",
       body: JSON.stringify(ingredient),
@@ -43,7 +65,8 @@ function Ingredients() {
       }
     })
       .then(response => {
-        setIsLoading(false);
+        // setIsLoading(false);
+        dispatchHttp({ type: "RESPONSE" });
         return response.json();
       })
       .then(responseData => {
@@ -63,13 +86,15 @@ function Ingredients() {
         });
       })
       .catch(error => {
-        setIsLoading(false);
-        setError(error.message);
+        // setIsLoading(false);
+        // setError(error.message);
+        dispatchHttp({ type: "ERROR", errorMessage: error.message });
       });
   };
 
   const removeIngredientHandler = ingredientId => {
-    setIsLoading(true);
+    //setIsLoading(true);
+    dispatchHttp({ type: "SEND" });
     fetch(
       `https://marker-1516988810351.firebaseio.com/ingredients/${ingredientId}.json`,
       {
@@ -77,28 +102,31 @@ function Ingredients() {
       }
     )
       .then(response => {
-        setIsLoading(false);
+        //setIsLoading(false);
+        dispatchHttp({ type: "RESPONSE" });
         // setUserIngredients(prevIngredients =>
         //   prevIngredients.filter(item => item.id !== ingredientId)
         // );
         dispatch({ type: "DELETE", id: ingredientId });
       })
       .catch(error => {
-        setIsLoading(false);
-        setError(error.message);
+        // setIsLoading(false);
+        // setError(error.message);
+        dispatchHttp({ type: "ERROR", errorMessage: error.message });
+        console.log("err before ", httpState);
       });
   };
 
-  const clearError = () => {
-    setError(null);
-  };
+  const clearError = () => dispatchHttp({ type: "CLEAR" });
 
   return (
     <div className="App">
-      {error && <ErrorModal onClose={clearError}>{error}</ErrorModal>}
+      {httpState.error && (
+        <ErrorModal onClose={clearError}>{httpState.error}</ErrorModal>
+      )}
       <IngredientForm
         onAddIngredient={addIngredientHandler}
-        loading={isLoading}
+        loading={httpState.isLoading}
       />
 
       <section>
