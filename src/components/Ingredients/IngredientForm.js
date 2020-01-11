@@ -15,6 +15,7 @@ const IngredientForm = React.memo(props => {
       amount: enteredAmount
     });
   };
+  console.log("RENDERING INGREDIENT FORM");
 
   return (
     <section className="ingredient-form">

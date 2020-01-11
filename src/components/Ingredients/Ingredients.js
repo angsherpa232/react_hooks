@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useReducer } from "react";
+import React, { useEffect, useCallback, useReducer, useMemo } from "react";
 
 import IngredientForm from "./IngredientForm";
 import Search from "./Search";
@@ -54,7 +54,7 @@ function Ingredients() {
     userIngredients
   ]);
 
-  const addIngredientHandler = ingredient => {
+  const addIngredientHandler = useCallback(ingredient => {
     // setIsLoading(true);
     dispatchHttp({ type: "SEND" });
     fetch("https://marker-1516988810351.firebaseio.com/ingredients.json", {
@@ -90,34 +90,46 @@ function Ingredients() {
         // setError(error.message);
         dispatchHttp({ type: "ERROR", errorMessage: error.message });
       });
-  };
+  }, []);
 
-  const removeIngredientHandler = ingredientId => {
-    //setIsLoading(true);
-    dispatchHttp({ type: "SEND" });
-    fetch(
-      `https://marker-1516988810351.firebaseio.com/ingredients/${ingredientId}.json`,
-      {
-        method: "DELETE"
-      }
-    )
-      .then(response => {
-        //setIsLoading(false);
-        dispatchHttp({ type: "RESPONSE" });
-        // setUserIngredients(prevIngredients =>
-        //   prevIngredients.filter(item => item.id !== ingredientId)
-        // );
-        dispatch({ type: "DELETE", id: ingredientId });
-      })
-      .catch(error => {
-        // setIsLoading(false);
-        // setError(error.message);
-        dispatchHttp({ type: "ERROR", errorMessage: error.message });
-        console.log("err before ", httpState);
-      });
-  };
+  const removeIngredientHandler = useCallback(
+    ingredientId => {
+      //setIsLoading(true);
+      dispatchHttp({ type: "SEND" });
+      fetch(
+        `https://marker-1516988810351.firebaseio.com/ingredients/${ingredientId}.json`,
+        {
+          method: "DELETE"
+        }
+      )
+        .then(response => {
+          //setIsLoading(false);
+          dispatchHttp({ type: "RESPONSE" });
+          // setUserIngredients(prevIngredients =>
+          //   prevIngredients.filter(item => item.id !== ingredientId)
+          // );
+          dispatch({ type: "DELETE", id: ingredientId });
+        })
+        .catch(error => {
+          // setIsLoading(false);
+          // setError(error.message);
+          dispatchHttp({ type: "ERROR", errorMessage: error.message });
+          console.log("err before ", httpState);
+        });
+    },
+    [httpState]
+  );
 
-  const clearError = () => dispatchHttp({ type: "CLEAR" });
+  const clearError = useCallback(() => dispatchHttp({ type: "CLEAR" }), []);
+
+  const ingredientList = useMemo(() => {
+    return (
+      <IngredientList
+        ingredients={userIngredients}
+        onRemoveItem={removeIngredientHandler}
+      />
+    );
+  }, [userIngredients, removeIngredientHandler]);
 
   return (
     <div className="App">
@@ -131,10 +143,7 @@ function Ingredients() {
 
       <section>
         <Search onLoadIngredients={filteredIngredientHandler} />
-        <IngredientList
-          ingredients={userIngredients}
-          onRemoveItem={removeIngredientHandler}
-        />
+        {ingredientList}
       </section>
     </div>
   );
