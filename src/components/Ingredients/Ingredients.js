@@ -36,13 +36,29 @@ function Ingredients() {
       .catch(error => console.log(error));
   };
 
+  const removeIngredientHandler = ingredientId => {
+    fetch(
+      `https://marker-1516988810351.firebaseio.com/ingredients/${ingredientId}.json`,
+      {
+        method: "DELETE"
+      }
+    ).then(response => {
+      setUserIngredients(prevIngredients =>
+        prevIngredients.filter(item => item.id !== ingredientId)
+      );
+    });
+  };
+
   return (
     <div className="App">
       <IngredientForm onAddIngredient={addIngredientHandler} />
 
       <section>
         <Search onLoadIngredients={filteredIngredientHandler} />
-        <IngredientList ingredients={userIngredients} onRemoveItem={() => {}} />
+        <IngredientList
+          ingredients={userIngredients}
+          onRemoveItem={removeIngredientHandler}
+        />
       </section>
     </div>
   );
